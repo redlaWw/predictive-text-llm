@@ -40,7 +40,8 @@ class PredictiveText:
                  /,
                  n_candidates: int = 50,
                  n_test: int = 30,
-                 auth: Optional[str] = None):
+                 auth: Optional[str] = None,
+                 api_type: str = "llama"):
         """Arguments:
             address: http address of model
             model  : model name
@@ -52,28 +53,54 @@ class PredictiveText:
         self.__address = address
         self.__model = model
         self.__prompt = initial
-        self.n_candidates = n_candidates
-        self.n_test = n_test
+        self.__n_candidates = n_candidates
+        self.__n_test = n_test
         self.__history = [len(initial)]
+        self.__api_type = api_type
+        self.__headers = {
+            "Authorization": f"Bearer {auth}",
+            "Content-Type": "application/json"
+        }
+        if auth is not None:
+            self.__headers["Authorization"] = f"Bearer {auth}"
         self.__load_candidates()
 
     # write predictions to user
     def __write_predictions(self, reload):
         if reload:
             self.__load_candidates()
-        for (i, candidate) in enumerate(self.candidates):
+        for (i, candidate) in enumerate(self.__candidates):
             self.__write_user(f"{i: >4} ({math.exp(candidate["logprob"]):.4}): {candidate["token"]!r}\n")
         
 
     def __load_candidates(self):
-        resp = requests.post(self.__address + "/completion", json = {
-            "model": self.__model,
-            "n_predict": 1,
-            "n_probs": self.n_candidates,
-            "temperature": 0,
-            "prompt": self.__prompt
-        })
-        self.candidates = resp.json()["completion_probabilities"][0]["top_logprobs"]
+        match self.__api_type:
+            case "llama":
+                resp = requests.post(
+                    self.__address + "/completion",
+                    headers = self.__headers,
+                    json = {
+                        "model": self.__model,
+                        "n_predict": 1,
+                        "n_probs": self.__n_candidates,
+                        "temperature": 0,
+                        "prompt": self.__prompt
+                    }
+                )
+                self.__candidates = resp.json()["completion_probabilities"][0]["top_logprobs"]
+            case "v1_completions":
+                resp = requests.post(
+                    self.__address + "/v1/completions",
+                    headers = self.__headers,
+                    json = {
+                        "model": self.__model,
+                        "max_tokens": 1,
+                        "logprobs": self.__n_candidates,
+                        "temperature": 0,
+                        "prompt": self.__prompt
+                    }
+                )
+                self.__candidates = resp.json()["choices"][0]["logprobs"]["content"][0]["top_logprobs"]
 
     def prompt(self):
         return self.__prompt
@@ -88,7 +115,7 @@ class PredictiveText:
 
     # extends by candidate index, rather than string
     def __extend_index(self, index):
-        self.__extend(self.candidates[index]["token"])
+        self.__extend(self.__candidates[index]["token"])
 
     def __undo(self):
         self.__history.pop()
@@ -150,10 +177,10 @@ class PredictiveText:
             case default:
                 try:
                     next_int = int(cont, 10)
-                    next = self.candidates[next_int]["token"]
+                    next = self.__candidates[next_int]["token"]
                 except ValueError:
                     next = None
-        [prompt, completion] = self.__complete(next, self.n_test)
+        [prompt, completion] = self.__complete(next, self.__n_test)
         self.__write_user(f"{prompt+completion!r}")
 
     def __report_error(self, e):
