@@ -9,7 +9,7 @@ Interactive mode works as follows:
 The model will provide a set of numbered predictions, and you can append a prediction to your prompt by entering the number of the prediction.
 There are also a number of other operations which can be selected by prefixing your input with a symbol:
 
-* `]`: Extend your prompt by the literal text following the `]`.
+* `]`: Extend your prompt by the literal text following the `]`.  Allows unicode escapes per the `unicode_escape` encoder in the Python Lib/codecs module.
 
 * `<`: Undo your previous action.  Undo history remembers the full session.
 

@@ -12,7 +12,7 @@ class PredictiveText:
         There are also a number of other operations which can be selected by
         prefixing your input with a symbol:
             ]: Extend your prompt by the literal text following the ].
-               Syntax is 
+               Allows unicode escapes per the `unicode_escape` encoder in the Python Lib/codecs module.
             <: Undo your previous action.  Undo history remembers the full session.
             t: Test an option.  Generates a series of tokens of length equal to test_n
                to show a possible completion from a given option.  Can be followed by
