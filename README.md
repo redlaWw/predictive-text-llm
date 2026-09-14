@@ -4,7 +4,7 @@ A simple application that provides an interface to write text using suggestions 
 Right now, it can be run by creating the `PredictiveText` class and calling `.predict()` on the resulting object.
 
 Guide:
-Call Predictive_Text.predict to enter interactive mode.
+Call `Predictive_Text.predict` to enter interactive mode.
 Interactive mode works as follows:
 The model will provide a set of numbered predictions, and you can append a prediction to your prompt by entering the number of the prediction.
 There are also a number of other operations which can be selected by prefixing your input with a symbol:
