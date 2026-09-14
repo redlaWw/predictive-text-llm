@@ -17,6 +17,6 @@ There are also a number of other operations which can be selected by prefixing y
 
 * `c`: Two forms, either c followed by an int or c followed by an expression of the form int:int.  Form 1 continues the current prompt for a length in tokens equal to the number provided, choosing the most likely token.  Form 2 continues the current prompt for a length in tokens equal to the first number provided, choosing the token at index equal to the second number provided, with tokens ordered in decreasing probability.  Note, form 1 is much faster, but updates the history (used for undoing) only after the full operation, whereas form 2 updates the history after each token, but is slow.
 
-* f: Print the current prompt with formatting.
+* `f`: Print the current prompt with formatting.
 
-* !: Quit editing.  The constructed text will be available through the `prompt` method on the `PredictiveText` object.
+* `!`: Quit editing.  The constructed text will be available through the `prompt` method on the `PredictiveText` object.
