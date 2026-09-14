@@ -1,5 +1,6 @@
 import requests
 import math
+import typing
 
 class PredictiveText:
     """Guide:
@@ -11,6 +12,7 @@ class PredictiveText:
         There are also a number of other operations which can be selected by
         prefixing your input with a symbol:
             ]: Extend your prompt by the literal text following the ].
+               Syntax is 
             <: Undo your previous action.  Undo history remembers the full session.
             t: Test an option.  Generates a series of tokens of length equal to test_n
                to show a possible completion from a given option.  Can be followed by
@@ -31,13 +33,21 @@ class PredictiveText:
     """
 
 
-    def __init__(self, address, model, initial, n_candidates = 50, n_test = 30):
+    def __init__(self,
+                 address: str,
+                 model: str,
+                 initial: str,
+                 /,
+                 n_candidates: int = 50,
+                 n_test: int = 30,
+                 auth: Optional[str] = None):
         """Arguments:
-            address | str | http address of model
-            model   | str | model name
-            initial | str | initial prompt
-            n_probs | int | number of candidates
-            test_n  | int | number of tokens for test to generate
+            address: http address of model
+            model  : model name
+            initial: initial prompt
+            n_probs: number of candidates
+            test_n : number of tokens for test to generate
+            auth   : authorisation token 
         """
         self.__address = address
         self.__model = model
@@ -104,8 +114,14 @@ class PredictiveText:
     def __write_user(self, text):
         print(text)
 
+    # used to send messages to another location that is interested in the string being built
+    # e.g. the user's choices could be sent across a web connection to another application
     def __write_next(self, next):
         pass
+
+    def __input(self, prompt):
+        raw_input = input(prompt)
+        return raw_input.encode("latin-1", "backslashreplace").decode("unicode_escape")
 
     # gets a completion of length n for self.__prompt + next, returns [self.__prompt + next, completion]
     # if next is None, uses self.__prompt instead of self.__prompt + next
@@ -145,6 +161,8 @@ class PredictiveText:
 
     def predict(self):
         refresh = False # start with refresh False so that initial candidates aren't loaded twice
+        self.__write_predictions(False)
+        self.__write_prompt()
         while True:
             if refresh:
                 self.__load_candidates()
@@ -152,7 +170,7 @@ class PredictiveText:
                 self.__write_prompt()
             refresh = True
             
-            command = input("> ")
+            command = self.__input("> ")
             try:
                 first = command[0]
                 rest = command[1:]
